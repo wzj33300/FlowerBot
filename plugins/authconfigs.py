@@ -1,14 +1,14 @@
 from filemanage import *
 import os
 
-self_QQ = '234465553'
-super_admin = '2496097294'
+self_QQ = '3877285757'
+super_admin = '1255265672'
 
 blacklist = syncfrom('blacklist.json', [])
-admin_QQ = syncfrom('admin.json', ['2496097294'])
+admin_QQ = syncfrom('admin.json', ['1255265672'])
 groupauth = syncfrom('groupauth.json', {})
 
-MAINPATH = 'C:\\Users\Administrator\Downloads\\flowerbot'
+MAINPATH = 'D:\\qq_duel_bot\\FlowerBot\\'
 try:
     os.listdir(MAINPATH)
 except:
@@ -20,7 +20,7 @@ plugin_data = {
     'manage': '''/manage enable|disable [模块名称]：在当前群组开启/关闭模块
 /manage blacklist add|remove @user：将用户 user 加入/移出黑名单
 /manage admin add|remove @user：将用户 user 加入/移出管理''',
-    'hello': """/hello ： 向 flower 打招呼
+    'ciallo': """/ciallo ： 向 flower 打招呼
 /help ： 查询帮助
 /news 检查上一次的更新讯息
 /heartbeat：检查 bot 是否存活

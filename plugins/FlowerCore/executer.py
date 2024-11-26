@@ -2,6 +2,7 @@ import datetime
 
 from plugins.FlowerCore import crawler
 import pickle
+import time
 import traceback
 import difflib
 from plugins.FlowerCore.account import duel, bind, user
@@ -36,10 +37,10 @@ def parse_tags(tags):
     log(str(tags))
     try:
         rating = int(tags[0])
-        if rating < 800 or rating > 3500 or rating % 100 != 0:
-            return 'rating 应该是 800~3500 的整百数'
+        if rating != 0 and (rating < 800 or rating > 3500 or rating % 100 != 0):
+            return 'rating 应该是 0 或 800~3500 的整百数'
     except:
-        return 'rating 应该是 800~3500 的整百数'
+        return 'rating 应该是 0 或 800~3500 的整百数'
     for x in tags[1:]:
         y = str(x)
         if y[0] == '!': y = y[1:]
@@ -194,7 +195,7 @@ class Flower:
         result = sender.duel.change(sender)
         rival = sender.duel.rival(sender)
         if result == 0:
-            return "{:s} 发起了换题请求，{:s} 请输入 /duel change 以同意请求".format(sender.name(), rival.name())
+            return "这题是什么鸡巴，Mike我操你妈，赶紧他妈换一题，{:s} 请输入 /duel change 以同意请求".format(rival.name())
         else:
             return "题目链接：{:s}".format(crawler.link(sender.duel.problem))
 
@@ -247,12 +248,15 @@ class Flower:
         except:
             return '参数非法。'
         try: tags[0] = int(tags[0])
-        except: return "Rating 应该是 800 ~ 3500 的整百数"
+        except: return "Rating 应该是 0 或 800 ~ 3500 的整百数"
         excluded_problems = None
         if 'not-seen' in tags and sender.CF_id is not None:
             excluded_problems = crawler.problem_record(sender.CF_id)
             log("excluded {:d} problems".format(len(excluded_problems)))
-        return "题目链接：{:s}".format(crawler.link(duel.crawler.request_problem(tags, excluded_problems)))
+        result = duel.crawler.request_problem(tags, excluded_problems)
+        if (result == None):
+            return "抱歉，我没找到符合条件的题目。"
+        return "题目链接：{:s}".format(crawler.link(result))
 
     @classmethod
     def history(cls, sender, *args):
@@ -347,12 +351,16 @@ class Flower:
         s += '我已经工作了 {:d} 天\n'.format(days)
         s += '维护了 {:d} 场单挑\n'.format(c2 // 2)
         s += '一共有 {:d} 名选手注册了账号\n'.format(c1)
-        s += '谢谢你与我同行。'
+        s += '尼吗了戈壁。'
         return s
 
     @classmethod
     def daily_problem(cls, sender, *args):
-        return '题目链接:{:s}'.format(crawler.link(duel.crawler.daily_problem()))
+        args = args[0]
+        if len(args) > 0 and args[0] > time.strftime("%Y%m%d", time.localtime(time.time())):
+            return '不可预知未来'
+        daily = duel.crawler.daily_problem(*args)
+        return '题目链接:\nEasy:{}\nHard:{}\n两道题只能选一道做哦'.format(crawler.link(daily[0]), crawler.link(daily[1]))
 
     @classmethod
     def daily_finish(cls, sender, *args):
@@ -363,7 +371,8 @@ class Flower:
         if submission is None:
             return '网络错误，请稍后再试'
         v1, p1 = submission['verdict'], submission['problem']
-        if p1 == duel.crawler.daily_problem() and v1 == 'OK':
+        daily = duel.crawler.daily_problem()
+        if (p1 == daily[0] or p1 == daily[1]) and v1 == 'OK':
             point = p1['rating']
             sender.daily_passed.append(day)
             sender.daily_score += point
@@ -449,12 +458,14 @@ def execute_command(command, sender):
         statement = fun(sender, args)
         return statement
     except:
+        s = traceback.format_exc()
+        log(s)
         return """While handling the command above, an unexpected exception occured. See the details about 
                 the exception below:
                 --------------------
-                {:s}
+                {:s}{:s}
                 ---------------------
-                If you believe this is a glitch, please contact the developer.""".format(traceback.format_exc())
+                If you believe this is a glitch, please contact the developer.""".format(s[:200], "..." if len(s) > 200 else "")
 
 def exec_command(command, sender):
     res = interpret(command)

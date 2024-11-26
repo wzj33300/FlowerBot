@@ -33,7 +33,7 @@ class Hello(Plugin):
             return
         message_chain = self.event.message.as_message_chain()
         args = self.event.get_plain_text().split(" ")
-        if args[0] == '/hello':
+        if args[0] == '/ciallo':
             await self.event.reply(HelloMessage)
         if args[0] == '/news':
             await self.event.reply(VersionMessage)
@@ -98,7 +98,7 @@ class Hello(Plugin):
             message_chain = self.event.message.as_message_chain()
             tp = self.event.get_plain_text()
             text = message_chain[1]['text'].strip()
-            return text in ['/hello', '/heartbeat',
+            return text in ['/ciallo', '/heartbeat',
                             '/命运的天秤', '/test', '/news', '/temp'] or text.startswith(
                 '/exec') or text.startswith('/say') or text.startswith('/help')
         except:

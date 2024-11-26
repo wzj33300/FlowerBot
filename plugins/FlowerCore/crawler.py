@@ -36,11 +36,19 @@ def problem_name(problem, rating=False):
 
 
 problems = []
-
+problems_update_time = ""
+contests = []
+contests_update_time = ""
+contests_start_time = {}
 
 def fetch_problems() -> bool:
-    global problems
-    for cnt in range(10):
+    global problems, problems_update_time
+    nowtime = time.strftime("%Y%m%d", time.localtime(time.time()))
+    if problems_update_time == nowtime:
+        return True
+    problems_update_time = nowtime
+    print(problems_update_time)
+    for cnt in range(3):
         try:
             problems = (requests.get('https://codeforces.com/api/problemset.problems').json())['result']['problems']
             return True
@@ -48,18 +56,49 @@ def fetch_problems() -> bool:
             pass
     return False
 
+def fetch_contests() -> bool:
+    global contests, contests_update_time
+    nowtime = time.strftime("%Y%m%d", time.localtime(time.time()))
+    if contests_update_time == nowtime:
+        return True
+    contests_update_time = nowtime
+    print(contests_update_time)
+    for cnt in range(3):
+        try:
+            contests = (requests.get('https://codeforces.com/api/contest.list').json())['result']
+            for item in contests:
+                contest = item['id']
+                if 'startTimeSeconds' in item:
+                    contests_start_time[contest] = item['startTimeSeconds']
+                else:
+                    contests_start_time[contest] = 0
+            return True
+        except BaseException:
+            pass
+    return False
 
-def daily_problem():
-    t = time.localtime(time.time())
-    res = []
+def daily_problem(*args):
+    fetch_problems()
+    fetch_contests()
+
+    print(args)
+    if len(args) == 0:
+        t = time.localtime(time.time())
+    else:
+        t = time.strptime(args[0], "%Y%m%d")
+    res_easy = []
+    res_hard = []
     for x in problems:
         try:
-            if x['rating'] <= DAILY_UPPER_BOUND:
-                res.append(x)
+            if x['contestId'] >= 300 and not ('*special' in x['tags']) and contests_start_time[x['contestId']] < time.mktime(t):
+                if x['rating'] <= DAILY_EASY_UPPER_BOUND:
+                    res_easy.append(x)
+                else:
+                    res_hard.append(x)
         except KeyError:
             pass
-    seed = (t.tm_year * 10000 + t.tm_mon * 33 * t.tm_mday) % len(res)
-    return res[seed]
+    seed = (t.tm_year * 19260817 + t.tm_mon * 114514 * t.tm_mday)
+    return [res_easy[seed % len(res_easy)], res_hard[seed % len(res_hard)]]
 
 
 def problem_record(user):
@@ -78,6 +117,7 @@ def problem_record(user):
 
 
 def request_problem(tags, excluded_problems=None):
+    fetch_problems()
     if excluded_problems is None:
         excluded_problems = set()
     assert (type(tags[0]) == int)
@@ -110,7 +150,7 @@ def request_problem(tags, excluded_problems=None):
                     flag = 0
         if not flag:
             continue
-        if x['rating'] == rating:
+        if rating == 0 or x['rating'] == rating:
             result.append(x)
     if not result:
         return None
