@@ -8,6 +8,7 @@ import difflib
 from plugins.FlowerCore.account import duel, bind, user
 from functools import cmp_to_key
 from plugins.FlowerCore.configs import *
+from plugins.authconfigs import MAINPATH
 
 
 def match(s, t):
@@ -460,12 +461,13 @@ def execute_command(command, sender):
     except:
         s = traceback.format_exc()
         log(s)
+        s = s.replace(MAINPATH, '<mainpath>/')
         return """While handling the command above, an unexpected exception occured. See the details about 
                 the exception below:
                 --------------------
                 {:s}{:s}
                 ---------------------
-                If you believe this is a glitch, please contact the developer.""".format(s[:200], "..." if len(s) > 200 else "")
+                If you believe this is a glitch, please contact the developer.""".format(s[:400], "..." if len(s) > 400 else "")
 
 def exec_command(command, sender):
     res = interpret(command)

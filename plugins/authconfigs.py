@@ -8,11 +8,10 @@ blacklist = syncfrom('blacklist.json', [])
 admin_QQ = syncfrom('admin.json', ['1255265672'])
 groupauth = syncfrom('groupauth.json', {})
 
-MAINPATH = 'D:\\qq_duel_bot\\FlowerBot\\'
-try:
-    os.listdir(MAINPATH)
-except:
-    MAINPATH = 'C:\\Users\Luhao Yan\Desktop\工程\Mirai\\alicebot-starter\\'
+# 原来是 wordle 用
+# 现在又在错误输出中使用，必须绝对路径
+MAINPATH = '/home/wzj/qq_duel_bot/FlowerBot_new/'
+os.listdir(MAINPATH)
 
 permanent = ['manage']
 
